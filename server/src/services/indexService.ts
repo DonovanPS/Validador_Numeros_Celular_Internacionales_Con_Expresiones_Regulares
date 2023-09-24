@@ -180,7 +180,7 @@ class IndexService {
   public async create(table: string, data: any){
     let query: string;
 
-    console.log(data);
+
     
 
     if (table === 'phonenumber') {

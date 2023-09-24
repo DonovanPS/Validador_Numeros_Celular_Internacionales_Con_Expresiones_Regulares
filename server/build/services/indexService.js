@@ -158,7 +158,6 @@ class IndexService {
     create(table, data) {
         return __awaiter(this, void 0, void 0, function* () {
             let query;
-            console.log(data);
             if (table === 'phonenumber') {
                 query = `
       INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')

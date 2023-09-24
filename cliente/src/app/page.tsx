@@ -1,12 +1,19 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { NextPage } from 'next';
 
-export const Home= () => {
-  const { push } = useRouter();
-
+const Home: NextPage = () => {
+  const router = useRouter();
   useEffect(() => {
-     push('/pages/home');
+    router.push('/pages/home');
   }, []);
-  return <p></p>;
+
+  return (
+    <>
+    
+    </>
+  );
 };
+
+export default Home;

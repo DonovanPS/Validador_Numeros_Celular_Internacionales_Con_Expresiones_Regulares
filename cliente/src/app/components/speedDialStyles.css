@@ -1,0 +1,14 @@
+
+.p-card {
+    margin: 20px; /* Añade margen alrededor de la tarjeta */
+   
+    justify-content: center; /* Centra horizontalmente la tarjeta */
+    align-items: center; /* Centra verticalmente la tarjeta */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.p-datatable-custom {
+    /* Agrega estilos personalizados para la DataTable si es necesario */
+}

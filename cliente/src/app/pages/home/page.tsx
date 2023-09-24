@@ -10,6 +10,8 @@ import { Button } from 'primereact/button';
 import { validatePhoneNumber } from '@/app/services/numberService';
 import ShowToast from '@/app/components/toast';
 
+import Menu from '@/app/components/speedDial';
+
 const PhoneNumberValidation= () => {
     const [phoneNumber, setPhoneNumber] = useState('');
 
@@ -91,6 +93,7 @@ const PhoneNumberValidation= () => {
             </div>
 
             <ShowToast severity={toastSeverity} summary={toastSummary} detail={toastDetail} show={showToast} />
+            <Menu />
         </div>
     );
 };
