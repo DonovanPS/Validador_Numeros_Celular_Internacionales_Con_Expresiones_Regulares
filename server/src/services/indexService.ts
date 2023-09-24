@@ -1,5 +1,6 @@
 import pool from "../database";
 
+
 class IndexService {
 
 
@@ -18,7 +19,9 @@ class IndexService {
 
 
   public async findCountryCode(phoneNumber: string) {
-    const countryCodeMatch = phoneNumber.match(/^\+(\d{4})/);
+
+    const countryCodeMatch = phoneNumber.match(/^\+(\d{1,3})/);
+
 
     if (countryCodeMatch && countryCodeMatch[1]) {
       const countryCode = countryCodeMatch[1];
@@ -119,17 +122,20 @@ class IndexService {
         };
       } else {
 
-        
+
         const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
+        const countrId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
         const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
         const regexPattern = new RegExp(regexPatternString);
-        
+
 
         const isValid = regexPattern.test(phoneNumber);
 
         const result = {
           isValid,
           countryName,
+          countrId
+
         };
 
         return result;
@@ -140,6 +146,64 @@ class IndexService {
     }
   }
 
+
+
+
+  public async getAll(table: string) {
+    let query: string;
+
+    if (table === 'phonenumber') {
+      query = `
+      SELECT PhoneNumberID, CountryName, CountryCode, PhoneNumber, RegexPattern FROM ${table}
+      INNER JOIN country ON ${table}.CountryID = country.CountryID
+      INNER JOIN regexpattern ON regexpattern.CountryID = country.CountryID
+      `;
+    } else if (table === 'regexpattern') {
+      query = `
+      SELECT * FROM ${table}
+      INNER JOIN country ON ${table}.CountryID = country.CountryID
+      `;
+    }
+
+    return new Promise((resolve, reject) => {
+      pool.query(query, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+
+  public async create(table: string, data: any){
+    let query: string;
+
+    console.log(data);
+    
+
+    if (table === 'phonenumber') {
+      query = `
+      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
+      `;
+    } else if (table === 'regexpattern') {
+      query = `
+      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
+      `;
+    }
+
+    return new Promise((resolve, reject) => {
+      pool.query(query, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+
+  }
 
 
 

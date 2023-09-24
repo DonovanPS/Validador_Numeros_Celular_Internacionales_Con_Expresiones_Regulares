@@ -13,6 +13,8 @@ class IndexRoutes {
     }
     config() {
         this.router.get('/validatePhoneNumber', this.indexController.validatePhoneNumber);
+        this.router.get('/getAll', this.indexController.getAll);
+        this.router.post('/create', this.indexController.create);
     }
 }
 const indexRoutes = new IndexRoutes();

@@ -28,7 +28,7 @@ class IndexService {
     }
     findCountryCode(phoneNumber) {
         return __awaiter(this, void 0, void 0, function* () {
-            const countryCodeMatch = phoneNumber.match(/^\+(\d{4})/);
+            const countryCodeMatch = phoneNumber.match(/^\+(\d{1,3})/);
             if (countryCodeMatch && countryCodeMatch[1]) {
                 const countryCode = countryCodeMatch[1];
                 // Crear un arreglo para almacenar las promesas de las consultas
@@ -109,12 +109,14 @@ class IndexService {
                 }
                 else {
                     const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
+                    const countrId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
                     const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
                     const regexPattern = new RegExp(regexPatternString);
                     const isValid = regexPattern.test(phoneNumber);
                     const result = {
                         isValid,
                         countryName,
+                        countrId
                     };
                     return result;
                 }
@@ -123,6 +125,60 @@ class IndexService {
                 console.error("Error al validar el número de teléfono:", error);
                 throw error;
             }
+        });
+    }
+    getAll(table) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query;
+            if (table === 'phonenumber') {
+                query = `
+      SELECT PhoneNumberID, CountryName, CountryCode, PhoneNumber, RegexPattern FROM ${table}
+      INNER JOIN country ON ${table}.CountryID = country.CountryID
+      INNER JOIN regexpattern ON regexpattern.CountryID = country.CountryID
+      `;
+            }
+            else if (table === 'regexpattern') {
+                query = `
+      SELECT * FROM ${table}
+      INNER JOIN country ON ${table}.CountryID = country.CountryID
+      `;
+            }
+            return new Promise((resolve, reject) => {
+                database_1.default.query(query, (err, result) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+            });
+        });
+    }
+    create(table, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query;
+            console.log(data);
+            if (table === 'phonenumber') {
+                query = `
+      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
+      `;
+            }
+            else if (table === 'regexpattern') {
+                query = `
+      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
+      `;
+            }
+            return new Promise((resolve, reject) => {
+                database_1.default.query(query, (err, result) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(result);
+                    }
+                });
+            });
         });
     }
 }

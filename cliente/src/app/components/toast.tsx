@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Toast as PrimeToast } from 'primereact/toast';
+import toast from '../interfaces/toast';
 
-const ShowToast = ({ severity, summary, detail, show }) => {
+const ShowToast = ({ severity, summary, detail, show }:toast) => {
   const toast = useRef<PrimeToast | null>(null);
 
   useEffect(() => {

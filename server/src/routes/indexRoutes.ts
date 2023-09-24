@@ -14,6 +14,8 @@ class IndexRoutes{
     config(): void{
        
         this.router.get('/validatePhoneNumber', this.indexController.validatePhoneNumber);
+        this.router.get('/getAll', this.indexController.getAll);
+        this.router.post('/create', this.indexController.create);
     
         
     }

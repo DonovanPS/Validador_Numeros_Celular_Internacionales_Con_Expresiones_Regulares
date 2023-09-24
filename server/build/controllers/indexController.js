@@ -32,6 +32,38 @@ class IndexController {
                 });
             }
         });
+        this.getAll = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const table = req.headers.table;
+            try {
+                const resp = yield this.indexService.getAll(table);
+                res.status(200).json({
+                    success: true,
+                    response: resp,
+                });
+            }
+            catch (err) {
+                res.status(400).json({
+                    success: false,
+                    message: err,
+                });
+            }
+        });
+        this.create = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const table = req.headers.table;
+            try {
+                const resp = yield this.indexService.create(table, req.body);
+                res.status(200).json({
+                    success: true,
+                    response: resp,
+                });
+            }
+            catch (err) {
+                res.status(400).json({
+                    success: false,
+                    message: err,
+                });
+            }
+        });
     }
 }
 exports.default = IndexController;
