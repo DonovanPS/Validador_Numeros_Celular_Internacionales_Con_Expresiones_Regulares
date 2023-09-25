@@ -109,14 +109,14 @@ class IndexService {
                 }
                 else {
                     const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
-                    const countrId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
+                    const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
                     const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
                     const regexPattern = new RegExp(regexPatternString);
                     const isValid = regexPattern.test(phoneNumber);
                     const result = {
                         isValid,
                         countryName,
-                        countrId
+                        countryId
                     };
                     return result;
                 }
@@ -155,29 +155,65 @@ class IndexService {
             });
         });
     }
-    create(table, data) {
+    // Función para verificar si un dato existe en una tabla
+    doesDataExist(table, field, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            let query;
-            if (table === 'phonenumber') {
-                query = `
-      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
-      `;
-            }
-            else if (table === 'regexpattern') {
-                query = `
-      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
-      `;
-            }
+            const query = `SELECT COUNT(*) AS count FROM ${table} WHERE ${field} = ?`;
             return new Promise((resolve, reject) => {
-                database_1.default.query(query, (err, result) => {
+                database_1.default.query(query, [value], (err, result) => {
                     if (err) {
                         reject(err);
                     }
                     else {
-                        resolve(result);
+                        const count = result[0].count;
+                        resolve(count > 0);
                     }
                 });
             });
+        });
+    }
+    create(table, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query;
+            try {
+                const exists = yield this.doesDataExist(table, 'PhoneNumber', data.PhoneNumber);
+                console.log(exists);
+                if (exists) {
+                    return {
+                        success: false,
+                        message: 'El número de teléfono ya existe en la base de datos',
+                    };
+                }
+                if (table === 'phonenumber') {
+                    query = `
+      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
+      `;
+                }
+                else if (table === 'regexpattern') {
+                    query = `
+      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
+      `;
+                }
+                // Continuar con la inserción si el dato no existe
+                const result = yield new Promise((resolve, reject) => {
+                    database_1.default.query(query, (err, res) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            resolve(res);
+                        }
+                    });
+                });
+                return {
+                    success: true,
+                    message: 'Dato insertado correctamente',
+                    result,
+                };
+            }
+            catch (error) {
+                throw error;
+            }
         });
     }
 }

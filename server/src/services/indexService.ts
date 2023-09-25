@@ -124,7 +124,7 @@ class IndexService {
 
 
         const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
-        const countrId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
+        const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
         const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
         const regexPattern = new RegExp(regexPatternString);
 
@@ -134,7 +134,7 @@ class IndexService {
         const result = {
           isValid,
           countryName,
-          countrId
+          countryId
 
         };
 
@@ -177,11 +177,41 @@ class IndexService {
   }
 
 
-  public async create(table: string, data: any){
-    let query: string;
+ // Función para verificar si un dato existe en una tabla
+public async doesDataExist(table: string, field: string, value: string) {
+  const query = `SELECT COUNT(*) AS count FROM ${table} WHERE ${field} = ?`;
+
+  return new Promise((resolve, reject) => {
+    pool.query(query, [value], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        const count = result[0].count;
+        resolve(count > 0);
+      }
+    });
+  });
+}
 
 
+public async create(table: string, data: any) {
+  let query: string;
+
+
+  try {
+   
+    const exists = await this.doesDataExist(table, 'PhoneNumber', data.PhoneNumber);
+
+    console.log(exists);
     
+    if (exists) {
+    
+      return {
+        success: false,
+        message: 'El número de teléfono ya existe en la base de datos',
+      };
+
+    }
 
     if (table === 'phonenumber') {
       query = `
@@ -192,19 +222,30 @@ class IndexService {
       INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
       `;
     }
+  
 
-    return new Promise((resolve, reject) => {
-      pool.query(query, (err, result) => {
+    // Continuar con la inserción si el dato no existe
+    const result = await new Promise((resolve, reject) => {
+      pool.query(query, (err, res) => {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+          resolve(res);
         }
       });
     });
 
-  }
+    return {
+      success: true,
+      message: 'Dato insertado correctamente',
+      result,
+    };
 
+  
+  } catch (error) {
+    throw error;
+  }
+}
 
 
 

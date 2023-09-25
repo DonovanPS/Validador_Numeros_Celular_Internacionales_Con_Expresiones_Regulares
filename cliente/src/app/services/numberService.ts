@@ -19,3 +19,23 @@ export async function validatePhoneNumber(phone: string): Promise<any> {
     throw new Error('Error al realizar la solicitud GET: ' + error.message);
   }
 }
+
+
+export async function insertInTable(table: string, data:any): Promise<any> {
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/create`, data, {
+      headers: {
+        table: table,
+      },
+    });
+
+   
+    return response.data;
+  } catch (error: any) {
+ 
+    throw new Error('Error al realizar la solicitud GET: ' + error.message);
+  }
+
+
+}

@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Button } from 'primereact/button';
 import { validatePhoneNumber } from '@/app/services/numberService';
+import { insertInTable } from '@/app/services/numberService';
 import ShowToast from '@/app/components/toast';
 
 import Menu from '@/app/components/speedDial';
@@ -25,11 +26,15 @@ const PhoneNumberValidation= () => {
     const validButton = useRef(null);
     const [visible, setVisible] = useState<boolean>(false);
 
+    const [countryId, setCountryId] = useState<number>(0);
+
     const validatePhoneNumberHandler = async () => {
         try {
             const phoneNumberWithPlus = "+" + phoneNumber;
             const response = await validatePhoneNumber(phoneNumberWithPlus);
 
+            setCountryId(response.response.countryId);
+        
             
             if (response.response.isValid) {
                 setToastSeverity('success');
@@ -56,8 +61,44 @@ const PhoneNumberValidation= () => {
     };
 
 
-    const accept = () => {
-        console.log("aceptado");
+
+    const accept = async () => {
+
+        try {
+            const phoneNumberWithPlus = "+" + phoneNumber;
+
+            const data = {
+                CountryID: countryId,
+                PhoneNumber: phoneNumberWithPlus,
+            }
+
+            const response = await insertInTable("phonenumber", data);
+            
+            if (response.response.success) {
+                setToastSeverity('success');
+                setToastSummary('Éxito');
+                setToastDetail('Número de teléfono se guardo con exito' );
+
+
+            } else {
+                setToastSeverity('warn');
+                setToastSummary('Advertencia');
+                setToastDetail('El número ya existe en la base de datos');
+            }
+            
+        } catch (error) {
+            setToastSeverity('error');
+            setToastSummary('Error');
+            setToastDetail('Error al guardar el número');
+        }
+
+        // Alternar el valor de showToast entre true y false
+        setShowToast((prevShowToast) => !prevShowToast);
+        
+
+        
+
+
 
     };
 
