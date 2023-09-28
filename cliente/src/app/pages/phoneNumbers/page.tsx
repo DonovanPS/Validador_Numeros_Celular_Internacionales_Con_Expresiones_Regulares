@@ -21,6 +21,9 @@ const ViwPhoneNumbers = () => {
     const searchParams = useSearchParams()
     const tabla = searchParams.get('data') as string;
 
+    console.log("Se cargo la pagina para mostrar la tabla: " + tabla);
+    
+
    
     const formattedTableName = formatTableName(tabla);
 

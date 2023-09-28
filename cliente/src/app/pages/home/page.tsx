@@ -29,14 +29,24 @@ const PhoneNumberValidation= () => {
     const [countryId, setCountryId] = useState<number>(0);
 
     const validatePhoneNumberHandler = async () => {
+
+        console.log("Click en validar");
+        
+
         try {
             const phoneNumberWithPlus = "+" + phoneNumber;
             const response = await validatePhoneNumber(phoneNumberWithPlus);
+
+            console.log("El nuemro a validar es: " + phoneNumberWithPlus);
 
             setCountryId(response.response.countryId);
         
             
             if (response.response.isValid) {
+
+                console.log("La respuesta del back end a sido valida, el numero es valido, se muestra el toast");
+                
+
                 setToastSeverity('success');
                 setToastSummary('Éxito');
                 setToastDetail('Número de teléfono válido para el país de ' + response.response.countryName);
@@ -44,18 +54,22 @@ const PhoneNumberValidation= () => {
                 setVisible(true);
 
             } else {
+                console.log("La respuesta del back end a sido valida pero no corresponde con un numero valido se muestra el toast");
                 setToastSeverity('warn');
                 setToastSummary('Advertencia');
                 setToastDetail('Número de teléfono no válido para el país de ' + response.response.countryName);
             }
             
         } catch (error) {
+
+            console.log("La respuesta del back end a sido invalida, se muestra el toast");
+
             setToastSeverity('error');
             setToastSummary('Error');
             setToastDetail('Número de teléfono no válido');
         }
 
-        // Alternar el valor de showToast entre true y false
+     
         setShowToast((prevShowToast) => !prevShowToast);
 
     };
@@ -64,8 +78,14 @@ const PhoneNumberValidation= () => {
 
     const accept = async () => {
 
+        console.log("Se acepto el guardar el numero");
+        
+
         try {
             const phoneNumberWithPlus = "+" + phoneNumber;
+
+            console.log("El numero a guardar es: " + phoneNumberWithPlus);
+            
 
             const data = {
                 CountryID: countryId,
@@ -75,18 +95,27 @@ const PhoneNumberValidation= () => {
             const response = await insertInTable("phonenumber", data);
             
             if (response.response.success) {
+
+                console.log("El numero se guardo con exito, se muestra el toast");
+
                 setToastSeverity('success');
                 setToastSummary('Éxito');
                 setToastDetail('Número de teléfono se guardo con exito' );
 
 
             } else {
+
+                console.log("El numero no se guardo con exito, ya existe, se muestra el toast");
+
                 setToastSeverity('warn');
                 setToastSummary('Advertencia');
                 setToastDetail('El número ya existe en la base de datos');
             }
             
         } catch (error) {
+
+            console.log("El numero no se guardo con exito, se muestra el toast");
+
             setToastSeverity('error');
             setToastSummary('Error');
             setToastDetail('Error al guardar el número');
@@ -104,6 +133,8 @@ const PhoneNumberValidation= () => {
 
     const reject = () => {
         console.log("rechazado");
+
+        
 
     };
 

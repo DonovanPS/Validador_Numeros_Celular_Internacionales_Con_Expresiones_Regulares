@@ -3,7 +3,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { getAll } from '@/app/services/getAllService';
 
-import './speedDialStyles.css'; // Importa el archivo de estilos CSS
+import './speedDialStyles.css'; 
 
 export default function Table({ table }) {
     const [data, setData] = useState([]);
@@ -11,6 +11,8 @@ export default function Table({ table }) {
     useEffect(() => {
         async function fetchData() {
             try {
+                console.log("Se realiza la peticion al back end para obtener los datos de la tabla: " + table)
+                
                 const response = await getAll(table);
                 setData(response.response);
           
@@ -28,7 +30,7 @@ export default function Table({ table }) {
     ));
 
     return (
-        <div className="p-card p-table-card"> {/* Agrega la clase p-table-card */}
+        <div className="p-card p-table-card"> 
             {data.length > 0 && (
                 <DataTable
                     value={data}
