@@ -110,11 +110,18 @@ class IndexService {
 
   public async validatePhoneNumber(phoneNumber: string) {
     try {
+
+      console.log(phoneNumber);
+      
       const regexPatterns = await this.getregexPattern(phoneNumber);
+
+      console.log(regexPatterns);
+      
 
       const regexPatternsJSON = JSON.stringify(regexPatterns, null, 2);
 
-
+      console.log(regexPatternsJSON);
+      
       if (JSON.parse(regexPatternsJSON)[0][0] === undefined) {
         return {
           isValid: false,
