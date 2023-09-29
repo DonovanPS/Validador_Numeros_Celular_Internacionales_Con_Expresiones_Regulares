@@ -101,25 +101,24 @@ class IndexService {
             try {
                 const regexPatterns = yield this.getregexPattern(phoneNumber);
                 const regexPatternsJSON = JSON.stringify(regexPatterns, null, 2);
-                if (JSON.parse(regexPatternsJSON)[0][0] === undefined) {
+                if (!regexPatternsJSON) {
+                    // No se encontró un patrón regex válido, devuelve un resultado inválido
                     return {
                         isValid: false,
                         countryName: null,
                     };
                 }
-                else {
-                    const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
-                    const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
-                    const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
-                    const regexPattern = new RegExp(regexPatternString);
-                    const isValid = regexPattern.test(phoneNumber);
-                    const result = {
-                        isValid,
-                        countryName,
-                        countryId
-                    };
-                    return result;
-                }
+                const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
+                const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
+                const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
+                const regexPattern = new RegExp(regexPatternString);
+                const isValid = regexPattern.test(phoneNumber);
+                const result = {
+                    isValid,
+                    countryName,
+                    countryId,
+                };
+                return result;
             }
             catch (error) {
                 console.error("Error al validar el número de teléfono:", error);
@@ -210,6 +209,48 @@ class IndexService {
                     message: 'Dato insertado correctamente',
                     result,
                 };
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
+    deletePhoneNumberByNumber(phoneNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Verificar si el número de teléfono existe en la tabla 'phonenumber'
+                const phoneNumberExists = yield this.doesDataExist('phonenumber', 'PhoneNumber', phoneNumber);
+                if (!phoneNumberExists) {
+                    return {
+                        success: false,
+                        message: 'El número de teléfono no existe en la base de datos',
+                    };
+                }
+                // Query SQL para eliminar el número de teléfono por su valor
+                const deleteQuery = `DELETE FROM phonenumber WHERE PhoneNumber = ?`;
+                // Ejecutar la consulta SQL para eliminar el número de teléfono
+                const result = yield new Promise((resolve, reject) => {
+                    database_1.default.query(deleteQuery, [phoneNumber], (err, res) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            resolve(res);
+                        }
+                    });
+                });
+                if (result.affectedRows > 0) {
+                    return {
+                        success: true,
+                        message: 'Número de teléfono eliminado correctamente',
+                    };
+                }
+                else {
+                    return {
+                        success: false,
+                        message: 'No se pudo eliminar el número de teléfono',
+                    };
+                }
             }
             catch (error) {
                 throw error;

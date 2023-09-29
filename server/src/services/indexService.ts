@@ -111,40 +111,36 @@ class IndexService {
   public async validatePhoneNumber(phoneNumber: string) {
     try {
       const regexPatterns = await this.getregexPattern(phoneNumber);
-
       const regexPatternsJSON = JSON.stringify(regexPatterns, null, 2);
 
-
-      if (JSON.parse(regexPatternsJSON)[0][0] === undefined) {
+      if (!regexPatternsJSON) {
+        // No se encontró un patrón regex válido, devuelve un resultado inválido
         return {
           isValid: false,
           countryName: null,
         };
-      } else {
-
-
-        const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
-        const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
-        const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
-        const regexPattern = new RegExp(regexPatternString);
-
-
-        const isValid = regexPattern.test(phoneNumber);
-
-        const result = {
-          isValid,
-          countryName,
-          countryId
-
-        };
-
-        return result;
       }
+
+      const countryName = JSON.parse(regexPatternsJSON)[0][0].CountryName;
+      const countryId = JSON.parse(regexPatternsJSON)[0][0].CountryID;
+      const regexPatternString = JSON.parse(regexPatternsJSON)[0][0].RegexPattern;
+      const regexPattern = new RegExp(regexPatternString);
+
+      const isValid = regexPattern.test(phoneNumber);
+
+      const result = {
+        isValid,
+        countryName,
+        countryId,
+      };
+
+      return result;
     } catch (error) {
       console.error("Error al validar el número de teléfono:", error);
       throw error;
     }
   }
+
 
 
 
@@ -177,77 +173,120 @@ class IndexService {
   }
 
 
- // Función para verificar si un dato existe en una tabla
-public async doesDataExist(table: string, field: string, value: string) {
-  const query = `SELECT COUNT(*) AS count FROM ${table} WHERE ${field} = ?`;
+  // Función para verificar si un dato existe en una tabla
+  public async doesDataExist(table: string, field: string, value: string) {
+    const query = `SELECT COUNT(*) AS count FROM ${table} WHERE ${field} = ?`;
 
-  return new Promise((resolve, reject) => {
-    pool.query(query, [value], (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        const count = result[0].count;
-        resolve(count > 0);
-      }
-    });
-  });
-}
-
-
-public async create(table: string, data: any) {
-  let query: string;
-
-
-  try {
-   
-    const exists = await this.doesDataExist(table, 'PhoneNumber', data.PhoneNumber);
-
-    console.log(exists);
-    
-    if (exists) {
-    
-      return {
-        success: false,
-        message: 'El número de teléfono ya existe en la base de datos',
-      };
-
-    }
-
-    if (table === 'phonenumber') {
-      query = `
-      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
-      `;
-    } else if (table === 'regexpattern') {
-      query = `
-      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
-      `;
-    }
-  
-
-    // Continuar con la inserción si el dato no existe
-    const result = await new Promise((resolve, reject) => {
-      pool.query(query, (err, res) => {
+    return new Promise((resolve, reject) => {
+      pool.query(query, [value], (err, result) => {
         if (err) {
           reject(err);
         } else {
-          resolve(res);
+          const count = result[0].count;
+          resolve(count > 0);
         }
       });
     });
-
-    return {
-      success: true,
-      message: 'Dato insertado correctamente',
-      result,
-    };
-
-  
-  } catch (error) {
-    throw error;
   }
-}
 
 
+  public async create(table: string, data: any) {
+    let query: string;
+
+
+    try {
+
+      const exists = await this.doesDataExist(table, 'PhoneNumber', data.PhoneNumber);
+
+      console.log(exists);
+
+      if (exists) {
+
+        return {
+          success: false,
+          message: 'El número de teléfono ya existe en la base de datos',
+        };
+
+      }
+
+      if (table === 'phonenumber') {
+        query = `
+      INSERT INTO ${table} (CountryID, PhoneNumber) VALUES ('${data.CountryID}', '${data.PhoneNumber}')
+      `;
+      } else if (table === 'regexpattern') {
+        query = `
+      INSERT INTO ${table} (CountryID, RegexPattern) VALUES (${data[0]}, '${data[1]}')
+      `;
+      }
+
+
+      // Continuar con la inserción si el dato no existe
+      const result = await new Promise((resolve, reject) => {
+        pool.query(query, (err, res) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      });
+
+      return {
+        success: true,
+        message: 'Dato insertado correctamente',
+        result,
+      };
+
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+
+  public async deletePhoneNumberByNumber(phoneNumber: string) {
+    try {
+      // Verificar si el número de teléfono existe en la tabla 'phonenumber'
+      const phoneNumberExists = await this.doesDataExist('phonenumber', 'PhoneNumber', phoneNumber);
+  
+      if (!phoneNumberExists) {
+        return {
+          success: false,
+          message: 'El número de teléfono no existe en la base de datos',
+        };
+      }
+  
+      // Query SQL para eliminar el número de teléfono por su valor
+      const deleteQuery = `DELETE FROM phonenumber WHERE PhoneNumber = ?`;
+  
+      // Ejecutar la consulta SQL para eliminar el número de teléfono
+      const result: any = await new Promise((resolve, reject) => {
+        pool.query(deleteQuery, [phoneNumber], (err, res) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        });
+      });
+  
+      if (result.affectedRows > 0) {
+        return {
+          success: true,
+          message: 'Número de teléfono eliminado correctamente',
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No se pudo eliminar el número de teléfono',
+        };
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 
 }
 
